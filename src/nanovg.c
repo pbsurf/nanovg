@@ -2439,6 +2439,9 @@ float nvgText(NVGcontext* ctx, float x, float y, const char* string, const char*
 	float invscale = 1.0f / scale;
 	int cverts = 0;
 	int nverts = 0;
+	// flag to reverse order of triangle vertices to ensure CCW winding (front face)
+	// not sure if this is the correct criterion in general to determine if we need to reverse order
+	int rev = (state->xform[0] * state->xform[3] < 0) ? 1 : 0;
 
 	if (end == NULL)
 		end = string + strlen(string);
@@ -2479,12 +2482,13 @@ float nvgText(NVGcontext* ctx, float x, float y, const char* string, const char*
 		nvgTransformPoint(&c[6],&c[7], state->xform, q.x0*invscale, q.y1*invscale);
 		// Create triangles
 		if (nverts+6 <= cverts) {
-			nvg__vset(&verts[nverts], c[0], c[1], q.s0, q.t0); nverts++;
-			nvg__vset(&verts[nverts], c[4], c[5], q.s1, q.t1); nverts++;
-			nvg__vset(&verts[nverts], c[2], c[3], q.s1, q.t0); nverts++;
-			nvg__vset(&verts[nverts], c[0], c[1], q.s0, q.t0); nverts++;
-			nvg__vset(&verts[nverts], c[6], c[7], q.s0, q.t1); nverts++;
-			nvg__vset(&verts[nverts], c[4], c[5], q.s1, q.t1); nverts++;
+			nvg__vset(&verts[nverts], c[0], c[1], q.s0, q.t0);
+			nvg__vset(&verts[nverts+1+rev], c[4], c[5], q.s1, q.t1);
+			nvg__vset(&verts[nverts+2-rev], c[2], c[3], q.s1, q.t0);
+			nvg__vset(&verts[nverts+3], c[0], c[1], q.s0, q.t0);
+			nvg__vset(&verts[nverts+4+rev], c[6], c[7], q.s0, q.t1);
+			nvg__vset(&verts[nverts+5-rev], c[4], c[5], q.s1, q.t1);
+			nverts += 6;
 		}
 	}
 
