@@ -259,7 +259,12 @@ static void* fons__tmpalloc(size_t size, void* up);
 static void fons__tmpfree(void* ptr, void* up);
 #define STBTT_malloc(x,u)    fons__tmpalloc(x,u)
 #define STBTT_free(x,u)      fons__tmpfree(x,u)
+#define STBTT_STATIC
+#ifdef NVG_STB_EXTERNAL
 #include "stb_truetype.h"
+#else
+#include "stb/stb_truetype.h"
+#endif
 
 struct FONSttFontImpl {
 	stbtt_fontinfo font;
